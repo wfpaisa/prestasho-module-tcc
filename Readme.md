@@ -13,8 +13,8 @@ retornar las tarifas de TCC.
 Al valor retornado por TCC se le agrega los valores ingresados en las distintas zonas del transportista y costos adicionales del envío ubicado en los productos.
 
 Dependiendo del Peso y Dimensiones se consulta al webservice:
-- => 5 kilos: Se consulta por paquetería
-- => 20 x 20 x 20 Centímetros se consulta por paquetería `./carriertcc.php` linea ~ 340
+- `>= 5 kilos`: Se consulta por paquetería
+- `>= 20 x 20 x 20 Centímetros`: se consulta por paquetería `./carriertcc.php` linea ~ 340
 
 La sumatoria de Pesos y Total del producto se redondea al mayor utilizando `ceils()` ver línea ~ 301:
 - `0.4`kg -> `1`kg
