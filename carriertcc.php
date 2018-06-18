@@ -104,6 +104,11 @@ class Carriertcc extends CarrierModule
 	/**
 	 * Create the structure of your form.
 	 */
+
+
+// CARRIERTCC_CIUDAD_ORIGEN
+// correo y si/no
+// 
 	protected function getConfigForm()
 	{
 		return array(
@@ -116,44 +121,51 @@ class Carriertcc extends CarrierModule
 					array(
 						'col' => 3,
 						'type' => 'text',
-						'desc' => $this->l('Enter 0 in test mode, and 1 in production mode'),
-						'name' => 'CARRIERTCC_ACCOUNT_MODE',
-						'label' => $this->l('Mode'),
+						'label' => $this->l('URL'),
+						'name' => 'CARRIERTCC_URL',
+						'desc' => $this->l('URL webservice, Ejemplo(http://clientes.tcc.com.co/servicios/liquidacionacuerdos.asmx?wsdl)'),
 					),
 					array(
 						'col' => 3,
 						'type' => 'text',
-						'desc' => $this->l('Enter a valid URL ex(http://clientes.tcc.com.co/servicios/liquidacionacuerdos.asmx?wsdl)'),
-						'name' => 'CARRIERTCC_ACCOUNT_URL',
-						'label' => $this->l('Url'),
+						'label' => $this->l('Método'),
+						'name' => 'CARRIERTCC_METODO',
+						'desc' => $this->l('Método de consulta al webservice, Ejemplo(consultarliquidacion)'),
 					),
 					array(
 						'col' => 3,
 						'type' => 'text',
-						'desc' => $this->l('Enter a valid method, Ex(LiquidaDespacho2)'),
-						'name' => 'CARRIERTCC_ACCOUNT_METHOD',
-						'label' => $this->l('Method'),
-					),
-					array(
-						'col' => 3,
-						'type' => 'text',
-						'desc' => $this->l('Enter a valid Cuenta, contact TCC Support'),
-						'name' => 'CARRIERTCC_ACCOUNT_CUENTA',
-						'label' => $this->l('Cuenta'),
-					),
-					array(
-						'col' => 3,
-						'type' => 'text',
-						'desc' => $this->l('Enter a valid Clave, contact TCC Support'),
-						'name' => 'CARRIERTCC_ACCOUNT_CLAVE',
 						'label' => $this->l('Clave'),
+						'name' => 'CARRIERTCC_CLAVE',
+						'desc' => $this->l('Clave proporcionada por TCC, Ejemplo(MedPropiedades)'),
 					),
 					array(
 						'col' => 3,
 						'type' => 'text',
-						'desc' => $this->l('Enter a DANE number city origen, medellin(5001000),bogota:(11001000)'),
-						'name' => 'CARRIERTCC_ACCOUNT_CITY',
+						'name' => 'CARRIERTCC_CUENTA_PAQUETERIA',
+						'label' => $this->l('Cuenta paquetería'),
+						'desc' => $this->l('Cuenta de paquetería proporcionada por TCC, Ejemplo(1021910)'),
+					),
+					array(
+						'col' => 3,
+						'type' => 'text',
+						'label' => $this->l('Cuenta mensajería'),
+						'name' => 'CARRIERTCC_CUENTA_MENSAJERIA',
+						'desc' => $this->l('Cuenta de mensajería proporcionada por TCC, Ejemplo(5032800)'),
+					),
+					array(
+						'col' => 3,
+						'type' => 'text',
 						'label' => $this->l('Ciudad Origen'),
+						'name' => 'CARRIERTCC_CIUDAD_ORIGEN',
+						'desc' => $this->l('Ciudad de origen, Ejemplo para medellin(5001000), ver lista de códigos DANE <<CÓDIGOS DANE>>'),
+					),
+					array(
+						'col' => 3,
+						'type' => 'text',
+						'label' => $this->l('Error email'),
+						'name' => 'CARRIERTCC_ERROR_EMAIL',
+						'desc' => $this->l('En caso de retornar TCC un error enviarlo a un email, dejarlo en blanco para desactivar'),
 					),
 
 				),
@@ -171,12 +183,13 @@ class Carriertcc extends CarrierModule
 	{
 		
 		return array(
-			'CARRIERTCC_ACCOUNT_MODE' => Configuration::get('CARRIERTCC_ACCOUNT_MODE', '0'),
-			'CARRIERTCC_ACCOUNT_URL' => Configuration::get('CARRIERTCC_ACCOUNT_URL', 'http://clientes.tcc.com.co/servicios/liquidacionacuerdos.asmx?wsdl'),
-			'CARRIERTCC_ACCOUNT_METHOD' => Configuration::get('CARRIERTCC_ACCOUNT_METHOD', 'LiquidaDespacho2'),
-			'CARRIERTCC_ACCOUNT_CUENTA' => Configuration::get('CARRIERTCC_ACCOUNT_CUENTA', null),
-			'CARRIERTCC_ACCOUNT_CLAVE' => Configuration::get('CARRIERTCC_ACCOUNT_CLAVE', null),
-			'CARRIERTCC_ACCOUNT_CITY' => Configuration::get('CARRIERTCC_ACCOUNT_CITY', '5001000'),
+			'CARRIERTCC_URL' => Configuration::get('CARRIERTCC_URL', 'http://clientes.tcc.com.co/servicios/liquidacionacuerdos.asmx?wsdl'),
+			'CARRIERTCC_METODO' => Configuration::get('CARRIERTCC_METODO', 'consultarliquidacion'),
+			'CARRIERTCC_CLAVE' => Configuration::get('CARRIERTCC_CLAVE', null),
+			'CARRIERTCC_CUENTA_PAQUETERIA' => Configuration::get('CARRIERTCC_CUENTA_PAQUETERIA', null),
+			'CARRIERTCC_CUENTA_MENSAJERIA' => Configuration::get('CARRIERTCC_CUENTA_MENSAJERIA', null),
+			'CARRIERTCC_CIUDAD_ORIGEN' => Configuration::get('CARRIERTCC_CIUDAD_ORIGEN', '5001000'),
+			'CARRIERTCC_ERROR_EMAIL' => Configuration::get('CARRIERTCC_ERROR_EMAIL', null),
 
 		);
 	}
@@ -199,7 +212,8 @@ class Carriertcc extends CarrierModule
 		if (Context::getContext()->customer->logged == true)
 		{
 
-
+			// DEBUG
+			// print_r( json_encode( Context::getContext()->cart->getProducts(),JSON_PRETTY_PRINT ) );
 			$id_address_delivery = Context::getContext()->cart->id_address_delivery;
 			$address = new Address($id_address_delivery);
 			
@@ -215,8 +229,9 @@ class Carriertcc extends CarrierModule
 			*/
 
 			// Avoid three times the same request
-// si la direccion cambia?
-			if($this->context->cookie->shipping_date != Context::getContext()->cart->date_upd){
+			// si la direccion cambia?
+
+			if($this->context->cookie->shipping_date_tcc != Context::getContext()->cart->date_upd){
 			
 
 				// WEBSERVICE
@@ -228,29 +243,22 @@ class Carriertcc extends CarrierModule
 				$webservice_total = $this->changeCurrency($webservice_total);
 
 				//webservice_total + (value admin carrier + Shipping costs in every productos)
-				$shipping_total = $webservice_total + $shipping_cost;
+				$shipping_total_tcc = $webservice_total + $shipping_cost;
 				
 				
-				$this->context->cookie->shipping_date = Context::getContext()->cart->date_upd;
-				$this->context->cookie->shipping_total = $shipping_total;
+				$this->context->cookie->shipping_date_tcc = Context::getContext()->cart->date_upd;
+				$this->context->cookie->shipping_total_tcc = $shipping_total_tcc;
 
-			 }else{
-			 	$shipping_total = $this->context->cookie->shipping_total;
-			 }
-							
+			}else{
 
-			//print_r("\n-------------------------------------------------------------------------------------------------------");
-			// print_r($address);
-			// print_r($shipping_cost); // Costo de envio segun el ingresado manualmente los transportistas del administrador
-			// print_r($params); // Datos del pedido
-			// print_r(Context::getContext()->cart);
-			// print_r($this->context->cookie);
-			// print_r($this->getConfigFormValues()); // Configuraciones
-			// 
+				$shipping_total_tcc = $this->context->cookie->shipping_total_tcc;
+
+			}
+
 			
-			if($shipping_total == 0) return false;
+			if($shipping_total_tcc == 0) return false;
 
-			return $shipping_total;
+			return $shipping_total_tcc;
 			
 			
 		}
@@ -274,12 +282,15 @@ class Carriertcc extends CarrierModule
 		);
 
 		foreach ($products as $product){
-			$products_total['price'] += (float)$product['total']; //Add values
+			$products_total['price'] += (float)$product['price_wt']; //Add values
 			$products_total['weight'] += ( (float)$product['weight'] * (float)$product['cart_quantity'] ); // Add value + (weight * quantity)
 			$products_total['height'] += ( (float)$product['height'] * (float)$product['cart_quantity'] ); // Add value + (height * quantity)
 			$products_total['width'] = ((float)$products_total['width'] < (float)$product['width'])? (float)$product['width'] : $products_total['width']; // greater width
 			$products_total['depth'] = ((float)$products_total['depth'] < (float)$product['depth'])? (float)$product['depth'] : $products_total['depth']; // greater depth
 		}
+
+		// DEBUG
+		// file_put_contents("./modules/carriertcc/logx.txt", json_encode($products_total,JSON_PRETTY_PRINT));
 
 		// Approximate the greater
 		$products_total['price'] = ceil($products_total['price']);
@@ -315,74 +326,87 @@ class Carriertcc extends CarrierModule
 
 	protected function getWebservice($params,$city_to){
 
-		$carr_data = $this->getConfigFormValues();
-		$carr_mode = $carr_data['CARRIERTCC_ACCOUNT_MODE'];
-		
-		$url = $carr_data['CARRIERTCC_ACCOUNT_URL'];
+		// DEBUG
+		// print_r($params);
 
-		/* Initialize webservice TCC WSDL */
-		$client = new SoapClient($url);
+		$carr_data = 	$this->getConfigFormValues();
+		$tcc_url = 		$carr_data['CARRIERTCC_URL'];
+		$client = 		new SoapClient($tcc_url);
+		$tcc_cuenta = 	$carr_data['CARRIERTCC_CUENTA_MENSAJERIA'];
+		$tcc_uen = 		'2';
 
-		//print_r($params);
 
-		/* Get TCC functions and types functions */
-		// print_r($client->__getFunctions());
-		// print_r($client->__getTypes()); 
-
-		/* Parameters for the TCC request  */
-		$soap_params = array(
-			"Clave" => $carr_data['CARRIERTCC_ACCOUNT_CLAVE'],
-			"Despacho" => array(
-				"cuenta" => $carr_data['CARRIERTCC_ACCOUNT_CUENTA'],
-				"idciudadorigen" => $carr_data['CARRIERTCC_ACCOUNT_CITY'], // Medellin
-				"idciudaddestino" => $city_to, //Bogota
-				"valormercancia" => $params['price'],
-				"unidadnegocio"=> "2",
-				"recogida" => "0", //Indica si la mercancía se recoge en origen True=si, False= no
-				"traecd" => "0", //Indica si el cliente lleva el paquete hasta TCC True=si, False=no
-				"recogecd" => "0",//Indica si el remitente recoge el paquete en TCC True=si, False=no
-				"boomerang" => "0",
-				"unidades" => array(
-					"unidad2"=>array(
-						"tipoempaque"=>"",
-						"unidades"=>"1",
-						"peso"=>$params['weight'], // kilos
-						"volumen"=>$params['volume'], //pasar a metros= alto * largo * ancho * 400 
-						"alto"=>$params['height'], //cm
-						"largo"=>$params['depth'],//cm
-						"ancho"=>$params['width'],//cm
-					)
-				)
-
-			),
-			"Liquidacion"=>"",
-			"Respuesta"=>"0",
-			"Mensaje"=>"0",
-
-		);
-
-		/* Invoke webservice method */
-		//$responseCity = $client->__soapCall("consultarMaestroCiudades", array($soap_params));
-		$response = $client->__soapCall($carr_data['CARRIERTCC_ACCOUNT_METHOD'], array($soap_params));
-
-		/* Response object to array to XML */
-		$response1 = get_object_vars($response);
-		
-		
-		if($response1['Liquidacion']){
-			$response2 = new SimpleXMLElement($response1['Liquidacion']);
-			
-			if(array_key_exists('valortotal',$response2)){
-				
-				// redondear
-				$resp = ceil((float)$response2->valortotal/100)*100;
-				
-				return $resp;
-			}
-			
+		if(	$params['weight'] > '5' ||
+			$params['height'] > '20' ||
+			$params['depth'] > '20' ||
+			$params['width'] > '20'
+		){
+			$tcc_cuenta = 	$carr_data['CARRIERTCC_CUENTA_PAQUETERIA'];
+			$tcc_uen = 		'1';
 		}
 
 
+		$soap_params = array(
+			'Clave' => 							$carr_data['CARRIERTCC_CLAVE'],
+			'Liquidacion' => array(
+		 		'tipoenvio' => 					'0',
+		 		'fecharemesa' => 				date('Y-m-d'),
+		 		'idunidadestrategicanegocio' => $tcc_uen, // 2 Mensajería, 1 Paquetería
+				'cuenta' => 					$tcc_cuenta,
+				'idciudadorigen' => 			$carr_data['CARRIERTCC_CIUDAD_ORIGEN'], // Medellin
+				'idciudaddestino' => 			$city_to,
+				'valormercancia' => 			$params['price'],
+				'unidadnegocio'=> 				'1',
+				'recogida' => 					'0', // Indica si la mercancía se recoge en origen True=si, False= no
+				'traecd' => 					'0', // Indica si el cliente lleva el paquete hasta TCC True=si, False=no
+				'recogecd' => 					'0', // Indica si el remitente recoge el paquete en TCC True=si, False=no
+				'boomerang' => 					'0',
+				'unidades' => array(
+					array(
+						'numerounidades' => 	'1',
+						'pesoreal' => 			$params['weight'], // 1 Kilo
+						'tipoempaque'=>			'1',
+						'unidades'=>			'1',
+						'pesovolumen'=>			$params['volume'], // Pasar a metros= alto * largo * ancho * 400
+						'alto'=>				$params['height'], // CMs
+						'largo'=>				$params['depth'], // CMs
+						'ancho'=>				$params['width'], // CMs
+					)
+				)
+			),
+			'Respuesta'=>'0',
+			'Mensaje'=>'0',
+
+		);
+
+
+
+		/* Invoke webservice method */
+		$response_raw = $client->__soapCall($carr_data['CARRIERTCC_METODO'], array($soap_params));
+		$res = $response_raw->consultarliquidacionResult;
+		
+		// DEBUG
+		// file_put_contents("./modules/carriertcc/log.txt", 
+		// 	"--------------\n Parametros enviados:\n--------------\n\n".
+		// 	json_encode($soap_params,JSON_PRETTY_PRINT).
+		// 	"\n\n\n--------------\n Parametros retornados:\n--------------\n\n".
+		// 	json_encode($response_raw,JSON_PRETTY_PRINT));
+
+		if( $res->respuesta->codigo === '-1' || !$res->total->totaldespacho){
+			if($carr_data['CARRIERTCC_ERROR_EMAIL']){
+				$para      = $carr_data['CARRIERTCC_ERROR_EMAIL'];
+				$titulo    = 'Error envios TCC';
+				$mensaje   = json_encode($response_raw,JSON_PRETTY_PRINT);
+				$cabeceras = 'X-Mailer: PHP/' . phpversion();
+
+				mail($para, $titulo, $mensaje, $cabeceras);
+			}
+		}else{
+			return round((float)$res->total->totaldespacho,0);
+		}
+
+
+		// VALOR DE ENVIO
 		return 0;
 
 	}
@@ -407,12 +431,12 @@ class Carriertcc extends CarrierModule
 		$carrier->shipping_method = 2;
 
 		foreach (Language::getLanguages() as $lang)
-			$carrier->delay[$lang['id_lang']] = $this->l('Super fast delivery');
+			$carrier->delay[$lang['id_lang']] = $this->l('¡Entrega de 1 a 6 días hábiles!');
 
 		if ($carrier->add() == true)
 		{
 			@copy(dirname(__FILE__).'/views/img/carrier_image.jpg', _PS_SHIP_IMG_DIR_.'/'.(int)$carrier->id.'.jpg');
-			Configuration::updateValue('MYSHIPPINGMODULE_CARRIER_ID', (int)$carrier->id);
+			Configuration::updateValue('CARRIERTCC_CARRIER_ID', (int)$carrier->id);
 			return $carrier;
 		}
 
@@ -468,8 +492,8 @@ class Carriertcc extends CarrierModule
 	 */
 	public function hookHeader()
 	{
-		$this->context->controller->addJS($this->_path.'/views/js/front.js');
-		$this->context->controller->addCSS($this->_path.'/views/css/front.css');
+		$this->context->controller->registerJavascript('modules-carriertcc', 'modules/'.$this->name.'/views/js/carriertcc.js', ['position' => 'bottom', 'priority' => 200]);
+		$this->context->controller->registerStylesheet('modules-carriertcc', 'modules/'.$this->name.'/views/css/carriertcc.css', ['media' => 'all', 'priority' => 200]);
 	}
 
 	public function hookUpdateCarrier($params)
