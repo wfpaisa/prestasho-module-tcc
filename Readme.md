@@ -23,7 +23,7 @@ La sumatoria de Pesos y Total del producto se redondea al mayor utilizando `ceil
 ## Nota
 - En `Prestashop/Internacional/Ubicaciones geografias/Departamentos` buscar `Distrito Capital` y remplazarlo por `Bogotá, d.c.`.
 - Es importante revisar que el nombre de los departamentos de Prestashop concuerde con los estados de `/carriertcc/views/js/dane.json`.
-- En el administrador verificar que en paises/Colombia este activado el código postal.
+- En el administrador verificar que en paises/Colombia este activado el código postal y dejar en blanco el campo ` Formato del código postal`.
 - Es indispensable que los campos del formulario de envío tengan el id (#city,#id_country,#id_state,.postcode) de lo contrario revisar el archivo `/carriertcc/views/js/front.js` para hacer que estos sean encontrados.
 - Al instalar el modulo encontrara la configuracion de este los campos para ingresar el usuario, la clave y mas datos proporcionados por TCC.
 - En `Prestashop/Transporte/Transportadoras` Verificar que el transportista TCC este activado para las zonas de los departamentos de Colombia.
