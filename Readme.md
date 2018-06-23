@@ -28,3 +28,4 @@ La sumatoria de Pesos y Total del producto se redondea al mayor utilizando `ceil
 - Al instalar el modulo encontrara la configuracion de este los campos para ingresar el usuario, la clave y mas datos proporcionados por TCC.
 - En `Prestashop/Transporte/Transportadoras` Verificar que el transportista TCC este activado para las zonas de los departamentos de Colombia.
 - Pedir a TCC acceder a la URL`http://clientes.tcc.com.co/servicios/liquidacionacuerdos.asmx?wsdl` y al método `consultarliquidacion`.
+- Todo producto debe de tener dimensiones y peso.
