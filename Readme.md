@@ -20,7 +20,13 @@ La sumatoria de Pesos y Total del producto se redondea al mayor utilizando `ceil
 - `0.4`kg -> `1`kg
 - `$12000.34` -> `$12001`
 
-## Nota
+## Cómo instalar?
+1. Descargar todos los archivos en una carpeta `carriertcc` dentro de `/modules`.
+2. Ir al administrador de Prestashop/modulos y buscar por TCC e instalar el recien descargado " es posible que aparezca otro modulo de pago con un nombre similar"
+3. Ir a configuración del modulo e ingresar los datos solicitados.
+4. Revisar las **Notas de funcionamiento**.
+
+## Nota de funcionamiento
 - En `Prestashop/Internacional/Ubicaciones geografias/Departamentos` buscar `Distrito Capital` y remplazarlo por `Bogotá, d.c.`.
 - Es importante revisar que el nombre de los departamentos de Prestashop concuerde con los estados de `/carriertcc/views/js/dane.json`.
 - En el administrador verificar que en paises/Colombia este activado el código postal y dejar en blanco el campo ` Formato del código postal`.
